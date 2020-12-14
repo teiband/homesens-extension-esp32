@@ -1,0 +1,7 @@
+Arduino additional board managerlinks:
+https://dl.espressif.com/dl/package_esp32_index.json
+
+Arduino libraries:
+https://www.arduino.cc/reference/en/libraries/websockets/
+https://github.com/adafruit/Adafruit_BME280_Library
+
