@@ -20,7 +20,7 @@
 WiFiMulti WiFiMulti;
 WebSocketsClient webSocket;
 
-#define USE_SERIAL Serial1
+#define USE_SERIAL Serial
 
 void hexdump(const void *mem, uint32_t len, uint8_t cols = 16) {
   const uint8_t* src = (const uint8_t*) mem;
@@ -101,27 +101,37 @@ void setup() {
   webSocket.onEvent(webSocketEvent);
 
   // use HTTP Basic Authorization this is optional remove if not needed
-  webSocket.setAuthorization("user", "Password");
+  //webSocket.setAuthorization("user", "Password");
 
   // try ever 5000 again if connection has failed 
   webSocket.setReconnectInterval(5000);
 
-  bme280_setup();
+  //bme280_setup();
+
+  USE_SERIAL.printf("[SETUP] finished\n\n");
 }
 
 void loop() {
+  USE_SERIAL.printf("Entering webSocket loop...\n");
   webSocket.loop();
+  USE_SERIAL.printf("after webSocket loop\n");
   // TODO integrate these sensor readings in loop
-  float temperature;
-  float pressure;
-  float humidity;
-  get_bme280_values(&temperature, &pressure, &humidity);
+  float temperature = 0.0;
+  float pressure = 0.0;
+  float humidity = 0.0;
+  
+  //get_bme280_values(&temperature, &pressure, &humidity);
+  
   // write to websocket server
   // ...
   //String payload = String(temperature) + String(',') + String(pressure) + String(',') + String(humidity);
+  USE_SERIAL.printf("#0\n");
   char payload[100];
   size_t payload_length = 0;
+  USE_SERIAL.printf("#1\n");
   snprintf(payload, payload_length, "%f.3, %f.3, %f.3", temperature, pressure, humidity);
+  USE_SERIAL.printf("Sending to websocket...\n");
   webSocket.sendTXT(payload, payload_length);
-  delay(1000*60); // wait 1 minute
+  USE_SERIAL("Waiting ...")
+  delay(1000*2); // wait
 }
