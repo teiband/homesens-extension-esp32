@@ -11,14 +11,25 @@
 #include <WiFiMulti.h>
 #include <WiFiClientSecure.h>
 
-#include <WebSocketsClient.h>
+#include <HTTPClient.h>
+#include <Arduino_JSON.h>
+// #include <WebSocketsClient.h>
 
 #include "user_defines.h"
 #include "bme280.h"
 
 
 WiFiMulti WiFiMulti;
-WebSocketsClient webSocket;
+// WebSocketsClient webSocket;
+
+const char* THIS_SENSOR_NAME = "esp32-bme280-1";
+const char* post_measurement_server = "http://192.168.0.100:5000/post-measurement";
+const char* get_status_update_server = "http://192.168.0.100:5000/get-status-update";
+String status_update_response;
+float status_update_arr[3];
+
+unsigned long last_time = 0;
+unsigned long timer_delay = 10000;
 
 #define USE_SERIAL Serial
 
@@ -35,6 +46,7 @@ void hexdump(const void *mem, uint32_t len, uint8_t cols = 16) {
   USE_SERIAL.printf("\n");
 }
 
+/*
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
 
   switch(type) {
@@ -69,6 +81,34 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
   }
 
 }
+*/
+
+
+String httpGETRequest(const char* serverName) {
+  HTTPClient http;
+    
+  // Your IP address with path or Domain name with URL path 
+  http.begin(serverName);
+  
+  // Send HTTP POST request
+  int httpResponseCode = http.GET();
+  
+  String payload = "{}"; 
+  
+  if (httpResponseCode>0) {
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
+    payload = http.getString();
+  }
+  else {
+    Serial.print("Error code: ");
+    Serial.println(httpResponseCode);
+  }
+  // Free resources
+  http.end();
+
+  return payload;
+}
 
 void setup() {
   // USE_SERIAL.begin(921600);
@@ -94,6 +134,9 @@ void setup() {
     delay(100);
   }
 
+  
+
+  /* use http requests instead of websocket
   // server address, port and URL
   webSocket.begin(WS_SERVER_ADDRESS, WS_SERVER_PORT, WS_SERVER_URL);
 
@@ -105,6 +148,7 @@ void setup() {
 
   // try ever 5000 again if connection has failed 
   webSocket.setReconnectInterval(5000);
+  */
 
   //bme280_setup();
 
@@ -112,16 +156,82 @@ void setup() {
 }
 
 void loop() {
-  USE_SERIAL.printf("Entering webSocket loop...\n");
-  webSocket.loop();
-  USE_SERIAL.printf("after webSocket loop\n");
-  // TODO integrate these sensor readings in loop
-  float temperature = 0.0;
-  float pressure = 0.0;
-  float humidity = 0.0;
+
+  float temperature, pressure, humidity = 0;
+
+  if ((millis() - last_time) > timer_delay) {
+    //if (WiFiMulti.status() == WL_CONNECTED) {
+    if (true) {
+      HTTPClient http;
+      //get_bme280_values(&temperature, &pressure, &humidity);
+      
+      // post-measurement request ---------------------------------
+      http.begin(post_measurement_server);
+
+      // Specify content-type header
+      http.addHeader("Content-Type", "application/json");
+      // Data to send with HTTP POST
+      String httpRequestData = String("{\"api_key\":\"") + 
+        String(EXTENSION_API_KEY) + 
+        String("\",\"sensor\":\"") + String(THIS_SENSOR_NAME) + 
+        String("\",\"temperature\":\"") + temperature + 
+        String("\",\"pressure\":\"") + pressure + 
+        String("\",\"humidity\":\"") + humidity + 
+        String("\"}");          
+      // Send HTTP POST request
+      int httpResponseCode = http.POST(httpRequestData);
+     
+      Serial.print("post-measurement HTTP Response code: ");
+      Serial.println(httpResponseCode);
+
+      // get-status-update request ----------------------------------
+      // http.begin(get_status_update_server);
+
+      const char* get_status_update_request_path = (String(get_status_update_server) + String("?api_key=") + 
+        String(EXTENSION_API_KEY) + 
+        String("&sensor=") + String(THIS_SENSOR_NAME)).c_str();
+      Serial.println("request url:");
+      Serial.println(get_status_update_request_path);
+      status_update_response = httpGETRequest(get_status_update_request_path);
+      Serial.println("response:");
+      Serial.println(status_update_response);
+      JSONVar myObject = JSON.parse(status_update_response);
   
-  //get_bme280_values(&temperature, &pressure, &humidity);
+      // JSON.typeof(jsonVar) can be used to get the type of the var
+      if (JSON.typeof(myObject) == "undefined") {
+        Serial.println("Parsing input failed!");
+        return;
+      }
+    
+      Serial.print("JSON object = ");
+      Serial.println(myObject);
+
+      JSONVar keys = myObject.keys();
+    
+      for (int i = 0; i < keys.length(); i++) {
+        JSONVar value = myObject[keys[i]];
+        Serial.print(keys[i]);
+        Serial.print(" = ");
+        Serial.println(value);
+        status_update_arr[i] = double(value);
+      }
+      Serial.print("1 = ");
+      Serial.println(status_update_arr[0]);
+      Serial.print("2 = ");
+      Serial.println(status_update_arr[1]);
+      Serial.print("3 = ");
+      Serial.println(status_update_arr[2]);
+      
+      // Free resources
+      http.end();
+    }
+    else {
+      Serial.println("WiFi Disconnected");
+    }
+    last_time = millis();
+  }
   
+  /*
   // write to websocket server
   // ...
   //String payload = String(temperature) + String(',') + String(pressure) + String(',') + String(humidity);
@@ -131,7 +241,8 @@ void loop() {
   USE_SERIAL.printf("#1\n");
   snprintf(payload, payload_length, "%f.3, %f.3, %f.3", temperature, pressure, humidity);
   USE_SERIAL.printf("Sending to websocket...\n");
-  webSocket.sendTXT(payload, payload_length);
+  // webSocket.sendTXT(payload, payload_length);
   USE_SERIAL("Waiting ...")
   delay(1000*2); // wait
+  */
 }
