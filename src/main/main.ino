@@ -150,7 +150,7 @@ void setup() {
   webSocket.setReconnectInterval(5000);
   */
 
-  //bme280_setup();
+  bme280_setup();
 
   USE_SERIAL.printf("[SETUP] finished\n\n");
 }
@@ -163,7 +163,7 @@ void loop() {
     //if (WiFiMulti.status() == WL_CONNECTED) {
     if (true) {
       HTTPClient http;
-      //get_bme280_values(&temperature, &pressure, &humidity);
+      get_bme280_values(&temperature, &pressure, &humidity);
       
       // post-measurement request ---------------------------------
       http.begin(post_measurement_server);
