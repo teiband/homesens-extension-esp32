@@ -1,7 +1,7 @@
 /*
- * WebSocketClient.ino
+ * main.ino
  *
- *  Created on: 24.05.2015
+ *  Created on: 01.01.2021
  *
  */
 
@@ -22,9 +22,26 @@
 WiFiMulti WiFiMulti;
 // WebSocketsClient webSocket;
 
+// enable production use, set false for debugging
+#define PRODUCTION
+//#define TARGET_DEBUG
+//#define DEVELOPMENT
+
 const char* THIS_SENSOR_NAME = "esp32-bme280-1";
+
+#ifdef PRODUCTION
+const char* post_measurement_server = "http://192.168.0.229:80/post-measurement";
+const char* get_status_update_server = "http://192.168.0.229:80/get-status-update";
+#endif
+#ifdef DEBUG: 
+const char* post_measurement_server = "http://192.168.0.229:5000/post-measurement";
+const char* get_status_update_server = "http://192.168.0.229:5000/get-status-update";
+#endif
+#ifdef DEVELOPMENT
 const char* post_measurement_server = "http://192.168.0.100:5000/post-measurement";
 const char* get_status_update_server = "http://192.168.0.100:5000/get-status-update";
+#endif
+
 String status_update_response;
 float status_update_arr[3];
 
