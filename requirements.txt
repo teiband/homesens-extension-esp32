@@ -1,7 +1,27 @@
-Arduino additional board managerlinks:
+Open Arduino IDE
+
+File > Preferences > Additional Boards Manager URLs >:
 https://dl.espressif.com/dl/package_esp32_index.json
 
-Arduino libraries:
-https://www.arduino.cc/reference/en/libraries/websockets/
-https://github.com/adafruit/Adafruit_BME280_Library
+Tools > Boards > Boards Manager > Filter your search >:
+esp32 by Espressif Systems
+Install!
 
+Tools > Board > ESP32 Arduino >:
+ESP32 Dev Module
+
+
+Arduino libraries:
+Tools > Manage Libraries >
+
+# https://www.arduino.cc/reference/en/libraries/websockets/
+
+Adafruit_BME280_Library
+https://github.com/adafruit/Adafruit_BME280_Library
+Install (version 2.2.1 with all dependencies)
+
+Arduino_JSON (by Arduino, not ArduinoJson)
+Install (0.1.0)!
+
+
+Tools > Serial Monitor (Ctrl+Shift+M) > Baudrate >: 115200
