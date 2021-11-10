@@ -35,8 +35,8 @@ const char* post_measurement_server = "http://reipi/post-measurement";
 const char* get_status_update_server = "http://reipi/get-status-update";
 #endif
 #ifdef DEBUG: 
-const char* post_measurement_server = "http://192.168.0.229:5000/post-measurement";
-const char* get_status_update_server = "http://192.168.0.229:5000/get-status-update";
+const char* post_measurement_server = "http://reipi:5000/post-measurement";
+const char* get_status_update_server = "http://reipi:5000/get-status-update";
 #endif
 #ifdef DEVELOPMENT
 const char* post_measurement_server = "http://192.168.0.100:5000/post-measurement";
