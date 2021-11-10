@@ -30,8 +30,9 @@ WiFiMulti WiFiMulti;
 const char* THIS_SENSOR_NAME = "esp32-bme280-1";
 
 #ifdef PRODUCTION
-const char* post_measurement_server = "http://192.168.0.229:80/post-measurement";
-const char* get_status_update_server = "http://192.168.0.229:80/get-status-update";
+// old server: 192.168.0.229:80
+const char* post_measurement_server = "http://reipi/post-measurement";
+const char* get_status_update_server = "http://reipi/get-status-update";
 #endif
 #ifdef DEBUG: 
 const char* post_measurement_server = "http://192.168.0.229:5000/post-measurement";
